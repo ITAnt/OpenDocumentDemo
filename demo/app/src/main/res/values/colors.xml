@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black_text_comfortable">#565656</color>
+    <color name="orange_text">#F96650</color>
+    <!-- 辅助文字,提示 -->
+    <color name="gray_text_hint">#ababab</color>
+    <color name="ic_launcher_background">#FFFFFF</color>
+</resources>

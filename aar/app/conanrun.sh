@@ -1,0 +1,1 @@
+. "D:\github\OpenDocument.droid-main\app\conanrunenv-relwithdebinfo-x86_64.sh"

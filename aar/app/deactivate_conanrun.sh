@@ -1,0 +1,1 @@
+. "D:\github\OpenDocument.droid-main\app\deactivate_conanrunenv-relwithdebinfo-x86_64.sh"

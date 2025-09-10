@@ -1,0 +1,49 @@
+########### AGGREGATED COMPONENTS AND DEPENDENCIES FOR THE MULTI CONFIG #####################
+#############################################################################################
+
+set(libiconv_COMPONENT_NAMES "")
+if(DEFINED libiconv_FIND_DEPENDENCY_NAMES)
+  list(APPEND libiconv_FIND_DEPENDENCY_NAMES )
+  list(REMOVE_DUPLICATES libiconv_FIND_DEPENDENCY_NAMES)
+else()
+  set(libiconv_FIND_DEPENDENCY_NAMES )
+endif()
+
+########### VARIABLES #######################################################################
+#############################################################################################
+set(libiconv_PACKAGE_FOLDER_RELWITHDEBINFO "C:/Users/PC/.conan2/p/libic7912cbbd0f232/p")
+set(libiconv_BUILD_MODULES_PATHS_RELWITHDEBINFO )
+
+
+set(libiconv_INCLUDE_DIRS_RELWITHDEBINFO )
+set(libiconv_RES_DIRS_RELWITHDEBINFO )
+set(libiconv_DEFINITIONS_RELWITHDEBINFO )
+set(libiconv_SHARED_LINK_FLAGS_RELWITHDEBINFO )
+set(libiconv_EXE_LINK_FLAGS_RELWITHDEBINFO )
+set(libiconv_OBJECTS_RELWITHDEBINFO )
+set(libiconv_COMPILE_DEFINITIONS_RELWITHDEBINFO )
+set(libiconv_COMPILE_OPTIONS_C_RELWITHDEBINFO )
+set(libiconv_COMPILE_OPTIONS_CXX_RELWITHDEBINFO )
+set(libiconv_LIB_DIRS_RELWITHDEBINFO "${libiconv_PACKAGE_FOLDER_RELWITHDEBINFO}/lib")
+set(libiconv_BIN_DIRS_RELWITHDEBINFO )
+set(libiconv_LIBRARY_TYPE_RELWITHDEBINFO STATIC)
+set(libiconv_IS_HOST_WINDOWS_RELWITHDEBINFO 0)
+set(libiconv_LIBS_RELWITHDEBINFO iconv charset)
+set(libiconv_SYSTEM_LIBS_RELWITHDEBINFO )
+set(libiconv_FRAMEWORK_DIRS_RELWITHDEBINFO )
+set(libiconv_FRAMEWORKS_RELWITHDEBINFO )
+set(libiconv_BUILD_DIRS_RELWITHDEBINFO )
+set(libiconv_NO_SONAME_MODE_RELWITHDEBINFO FALSE)
+
+
+# COMPOUND VARIABLES
+set(libiconv_COMPILE_OPTIONS_RELWITHDEBINFO
+    "$<$<COMPILE_LANGUAGE:CXX>:${libiconv_COMPILE_OPTIONS_CXX_RELWITHDEBINFO}>"
+    "$<$<COMPILE_LANGUAGE:C>:${libiconv_COMPILE_OPTIONS_C_RELWITHDEBINFO}>")
+set(libiconv_LINKER_FLAGS_RELWITHDEBINFO
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${libiconv_SHARED_LINK_FLAGS_RELWITHDEBINFO}>"
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${libiconv_SHARED_LINK_FLAGS_RELWITHDEBINFO}>"
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${libiconv_EXE_LINK_FLAGS_RELWITHDEBINFO}>")
+
+
+set(libiconv_COMPONENTS_RELWITHDEBINFO )

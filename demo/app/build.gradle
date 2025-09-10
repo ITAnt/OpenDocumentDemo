@@ -1,0 +1,222 @@
+import java.text.SimpleDateFormat
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    // 支持Kotlin注解，使用DataBinding要使用这个
+    //id 'kotlin-kapt'
+    alias(libs.plugins.ksp)
+}
+
+/**
+ * @return 生成versionCode，格式：年年月月日日时时
+ * 更新versionName却不更新versionCode会有问题，虽然可以仅更新versionCode而不更新versionName，但强烈建议同步更新
+ */
+def static codeFromYyMmDdHh() {
+    return new Date().format("yyMMddHH", TimeZone.getDefault())
+}
+
+def codeFromYyMmDdHhValue = codeFromYyMmDdHh()
+
+android {
+    namespace 'com.itant.wts'
+    compileSdk libs.versions.targetSdk.get().toInteger()
+
+    defaultConfig {
+        applicationId "com.itant.demo"
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        versionCode codeFromYyMmDdHh().toInteger()
+        versionName "1.0.0_${codeFromYyMmDdHh()}"
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+
+        resValue "string", "build_time", "${System.currentTimeMillis()}"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        viewBinding = true
+        // 如果代码包含用kotlin写的@BindAdapter，必须引入kapt。为了完全移除kapt，需要使用Java来实现@BindAdapter
+        dataBinding = true
+        // Gradle 8中默认关闭了BuildConfig（buildConfigField）的生成
+        buildConfig = true
+    }
+
+    signingConfigs {
+        config {
+            storeFile file('google.jks')
+            storePassword "Away6899458"
+            keyAlias "mm"
+            keyPassword "Away6899458"
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+
+    // 定义 productFlavors 并设置维度，如果不同维度里变量名一样，哪个维度在前面就是哪个维度的值
+    flavorDimensions = ["color", "area"]
+    productFlavors {
+        cn {
+            dimension "area"
+            // 使用 buildConfigField 定义变量
+            buildConfigField "String", "AREA_NAME", "\"CN\""
+            // 使用 resValue 定义资源值
+            resValue "string", "area_name", "CN"
+        }
+        eu {
+            dimension "area"
+            versionCode codeFromYyMmDdHhValue.toInteger()
+            versionName "1.0.0.${codeFromYyMmDdHhValue}_us"
+            buildConfigField "String", "AREA_NAME", "\"US\""
+            resValue "string", "area_name", "US"
+        }
+        red {
+            dimension "color"
+            buildConfigField "String", "COLOR_NAME", "\"red\""
+            resValue "string", "color_name", "red"
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.config
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField("String", "BASE_URL", '"http://www.shuiliu520.com/wuji/"')
+        }
+        release {
+            signingConfig signingConfigs.config
+            // 是否可调试
+            debuggable false
+            // 开启混淆
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 打的aar包里会含有一个混淆文件，apk打包时该混淆文件会自动引用
+            //buildConfigField("String", "BASE_URL", '"http://erp.blueasiainfo.com:19291/"')
+
+            buildConfigField("String", "BASE_URL", '"http://www.shuiliu520.com/wuji/"')
+        }
+    }
+
+    // 设置apk文件名
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach {
+            var versionDateFormat = new SimpleDateFormat("yyMMdd", Locale.getDefault())
+            //var versionDate = versionDateFormat.format(new Date())
+            var appNamePrefix = "demo"
+            outputFileName = "${appNamePrefix}_${versionName}.apk"
+            switch (variant.buildType.name) {
+                case "debug":
+                    outputFileName = "${appNamePrefix}_debug_${versionName}.apk"
+                    break
+                case "release":
+                    outputFileName = "${appNamePrefix}_realease_${versionName}.apk"
+                    break
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // 下面为实际重复导致报错的so文件
+    packagingOptions {
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+    }
+
+    // 视具体的so放置路径而定，解决找不到so库的问题UnsatisfiedLinkError
+    /*sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }*/
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar','*.aar'])
+
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+
+    // ViewPager2
+    //implementation 'androidx.viewpager2:viewpager2:1.1.0'
+
+    // RecyclerView
+    //implementation 'androidx.recyclerview:recyclerview:1.2.1'
+
+    // 查看数据库
+    //debugImplementation 'com.guolindev.glance:glance:1.1.0'
+
+    // Glide加载图片
+    //api(libs.ui.image.glide)
+
+    // 下拉刷新
+    //implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+    // kotlin
+    api(libs.storage.sp.ktx)
+    api(libs.performance.lifecycle)
+
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.google.material)
+
+    // 解决 Cannot access 'androidx.activity.FullyDrawnReporterOwner
+    api(libs.androidx.activity.ktx)
+
+    // 网络请求
+    api(libs.net.retrofit)
+
+    // 衔接 retrofit 和 gson
+    api(libs.net.retrofit.converter)
+    api(libs.utils.gson)
+
+    // 打印网络请求日志框架
+    api(libs.net.log)
+
+    // 内存泄漏检测（慎用！在部分定制设备上，先装debug版本，后装release版本，会导致动画失效，严重时影响Activity生命周期，即：A启动B，B已onCreate，A却不onStop，且看不到B的渲染效果）
+    debugImplementation(libs.performance.leakcanary)
+
+    // 通知栏显示请求，兼容 targetSdkVersion 31
+    debugApi(libs.net.chucker.debug)
+    releaseApi(libs.net.chucker.release)
+
+    // 工具
+    api(libs.utils.utilcodex)
+
+    // 适配器
+    api(libs.ui.recyclerview.adapter)
+
+    // MMKV
+    implementation(libs.storage.mmkv)
+
+    // ROOM数据库（推荐）
+    implementation(libs.storage.room.runtime)
+    //kapt(libs.storage.room.compiler) 不推荐，建议使用下面的ksp代替
+    ksp(libs.storage.room.compiler)
+    // 配合Kotlin协程使用
+    implementation(libs.storage.room.ktx)
+
+    //api project(path: ':lib:mvvm')
+    // ./gradlew build --refresh-dependencies
+    // 在线库（要先去jitpack点击get进行构建，构建成功后用everything搜索旧版本库并删除相关缓存，重新run）
+    //api 'com.github.ITAnt:mvvm:latest.release'
+    api 'com.github.ITAnt:mvvm:1.0.27'
+
+    // 崩溃记录 xcrash-android-lib:3.1.0不支持16KB对齐，慎用
+    //implementation 'com.iqiyi.xcrash:xcrash-android-lib:3.1.0'
+    // 日志框架 https://github.com/Tencent/mars，注意：1.2.6不支持x86，慎用！
+    implementation 'com.tencent.mars:mars-xlog:1.2.6'
+
+    // 流式布局自动换行
+    //implementation 'com.google.android:flexbox:1.0.0'
+}

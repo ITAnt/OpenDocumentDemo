@@ -1,0 +1,260 @@
+ViewModel:
+/**
+ * 待提醒数量
+ */
+val waitNotifyNumber: MutableLiveData<Int> = MutableLiveData()
+
+/**
+ * 已提醒数量
+ */
+val alreadyNotifyNumber: MutableLiveData<Int> = MutableLiveData()
+
+/**
+ * 待上报数量
+ */
+val waitReportNumber: MutableLiveData<Int> = MutableLiveData()
+
+/**
+ * 已上报数量
+ */
+val alreadyReportNumber: MutableLiveData<Int> = MutableLiveData()
+
+/**
+ * 所有记录流
+ */
+private fun countViolationFlow() = AppDatabase.getInstance()?.violationDao?.countViolation()
+
+init {
+    waitNotifyNumber.value = 0
+    alreadyNotifyNumber.value = 0
+    waitReportNumber.value = 0
+    alreadyReportNumber.value = 0
+}
+
+/**
+ * 获取所有记录并统计各个状态对应的数量，配合Flow实现动态监听数据库变化更新UI
+ */
+fun getAllRecord() {
+    viewModelScope.launch(Dispatchers.IO) {
+        countViolationFlow()?.collect {
+            RoomManager.instance.violationDao?.allViolationForToday(DateUtil.startOfTodDay(), DateUtil.endOfTodDay())?.let {
+                makeNumberList(it)
+            }
+        }
+    }
+}
+
+/**
+ * 统计各个状态对应的数量
+ */
+private fun makeNumberList(list: List<ViolationBean>) {
+    var waitNotifyNum: Int = 0
+    var alreadyNotifyNum: Int = 0
+    var waitReportNum: Int = 0
+    var alreadyReportNum: Int = 0
+    list.forEach { bean ->
+        if (bean.status == 3) {
+            // 已上报
+            alreadyReportNum++
+        } else if (bean.status == 1 || bean.status == 2 || bean.status == ViolationBean.STATUS_SENDING) {
+            if (TextUtils.equals(bean.strict, "1")) {
+                // 根据产品要求，严管街只有待上报和已上报，不管中间状态
+                waitReportNum++
+            } else {
+                // 根据产品要求，待提醒和已提醒仅统计非严管数据
+                if (TextUtils.isEmpty(bean.reminderTime)) {
+                    // 待提醒
+                    waitNotifyNum++
+                } else {
+                    // 已提醒
+                    alreadyNotifyNum++
+                }
+            }
+        }
+    }
+
+    waitNotifyNumber.postValue(waitNotifyNum)
+    alreadyNotifyNumber.postValue(alreadyNotifyNum)
+    waitReportNumber.postValue(waitReportNum)
+    alreadyReportNumber.postValue(alreadyReportNum)
+}
+
+
+布局：
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.hylink.violation.fragment.main.MainViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="@dimen/dp_93"
+        android:layout_marginStart="@dimen/dp_2"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_road_name"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_25"
+            android:paddingStart="@dimen/dp_8"
+            android:paddingEnd="0dp"
+            android:background="@drawable/bg_road_title"
+            android:gravity="center_vertical"
+            android:textColor="#ff49ddfc"
+            android:textSize="@dimen/sp_14"
+            tools:text="今日工作统计" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_1"
+                    android:text="待通知："
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/sp_13" />
+
+                <TextView
+                    android:id="@+id/tvWaitNotify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_3"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_19"
+                    android:text="@{String.valueOf(viewModel.waitNotifyNumber)}"
+                    tools:text="0" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_1"
+                    android:text="已通知："
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/sp_13" />
+
+                <TextView
+                    android:id="@+id/tvAlreadyNotify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_3"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_19"
+                    android:text="@{String.valueOf(viewModel.alreadyNotifyNumber)}"
+                    tools:text="0" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_1"
+                    android:text="待上报："
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/sp_13" />
+
+                <TextView
+                    android:id="@+id/tvWaitReport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_3"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_19"
+                    android:text="@{String.valueOf(viewModel.waitReportNumber)}"
+                    tools:text="0" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_1"
+                    android:text="已上报："
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/sp_13" />
+
+                <TextView
+                    android:id="@+id/tvAlreadyReport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_3"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_19"
+                    android:text="@{String.valueOf(viewModel.alreadyReportNumber)}"
+                    tools:text="0" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+</layout>
+
+
+Fragment：
+mDatabind.viewModel = mViewModel
+mViewModel.getAllRecord()
+
+数据库语句：
+App Inspection -> Database Inspector -> Open New Query Tab
+INSERT INTO t_violation VALUES(2, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, null, null, null, 0, null, null, null, null, null, null)
+
+UPDATE t_violation SET status = 2,failure=0 WHERE id=1

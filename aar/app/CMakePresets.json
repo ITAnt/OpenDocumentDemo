@@ -1,0 +1,46 @@
+{
+    "version": 3,
+    "vendor": {
+        "conan": {}
+    },
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 15,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conan-relwithdebinfo",
+            "displayName": "'conan-relwithdebinfo' config",
+            "description": "'conan-relwithdebinfo' configure using 'MinGW Makefiles' generator",
+            "generator": "MinGW Makefiles",
+            "cacheVariables": {
+                "CMAKE_SH": "CMAKE_SH-NOTFOUND",
+                "CMAKE_POLICY_DEFAULT_CMP0091": "NEW",
+                "BUILD_TESTING": "OFF",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            },
+            "toolchainFile": "conan_toolchain.cmake",
+            "binaryDir": "D:\\github\\OpenDocument.droid-main\\app"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "conan-relwithdebinfo",
+            "configurePreset": "conan-relwithdebinfo",
+            "jobs": 24
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "conan-relwithdebinfo",
+            "configurePreset": "conan-relwithdebinfo",
+            "environment": {
+                "PDF2HTMLEX_DATA_DIR": "C:\\Users\\PC\\.conan2\\p\\pdf2h86c1174c68f88\\p\\share\\pdf2htmlEX",
+                "POPPLER_DATA_DIR": "C:\\Users\\PC\\.conan2\\p\\poppl7b8549bdd0928\\p\\share\\poppler",
+                "FONTCONFIG_PATH": "$penv{FONTCONFIG_PATH}:C:\\Users\\PC\\.conan2\\p\\fontc6c455df2369b3\\p\\res\\etc\\fonts",
+                "WVDATADIR": "C:\\Users\\PC\\.conan2\\p\\wvwarb2f91e9c30400\\p\\share\\wv"
+            }
+        }
+    ]
+}

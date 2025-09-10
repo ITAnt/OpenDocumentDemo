@@ -1,0 +1,53 @@
+########### AGGREGATED COMPONENTS AND DEPENDENCIES FOR THE MULTI CONFIG #####################
+#############################################################################################
+
+set(freetype_COMPONENT_NAMES "")
+if(DEFINED freetype_FIND_DEPENDENCY_NAMES)
+  list(APPEND freetype_FIND_DEPENDENCY_NAMES brotli BZip2 PNG ZLIB)
+  list(REMOVE_DUPLICATES freetype_FIND_DEPENDENCY_NAMES)
+else()
+  set(freetype_FIND_DEPENDENCY_NAMES brotli BZip2 PNG ZLIB)
+endif()
+set(brotli_FIND_MODE "NO_MODULE")
+set(BZip2_FIND_MODE "MODULE")
+set(PNG_FIND_MODE "MODULE")
+set(ZLIB_FIND_MODE "MODULE")
+
+########### VARIABLES #######################################################################
+#############################################################################################
+set(freetype_PACKAGE_FOLDER_RELWITHDEBINFO "C:/Users/PC/.conan2/p/freet7dce30446c55d/p")
+set(freetype_BUILD_MODULES_PATHS_RELWITHDEBINFO "${freetype_PACKAGE_FOLDER_RELWITHDEBINFO}/lib/cmake/conan-official-freetype-variables.cmake")
+
+
+set(freetype_INCLUDE_DIRS_RELWITHDEBINFO )
+set(freetype_RES_DIRS_RELWITHDEBINFO )
+set(freetype_DEFINITIONS_RELWITHDEBINFO )
+set(freetype_SHARED_LINK_FLAGS_RELWITHDEBINFO )
+set(freetype_EXE_LINK_FLAGS_RELWITHDEBINFO )
+set(freetype_OBJECTS_RELWITHDEBINFO )
+set(freetype_COMPILE_DEFINITIONS_RELWITHDEBINFO )
+set(freetype_COMPILE_OPTIONS_C_RELWITHDEBINFO )
+set(freetype_COMPILE_OPTIONS_CXX_RELWITHDEBINFO )
+set(freetype_LIB_DIRS_RELWITHDEBINFO "${freetype_PACKAGE_FOLDER_RELWITHDEBINFO}/lib")
+set(freetype_BIN_DIRS_RELWITHDEBINFO )
+set(freetype_LIBRARY_TYPE_RELWITHDEBINFO STATIC)
+set(freetype_IS_HOST_WINDOWS_RELWITHDEBINFO 0)
+set(freetype_LIBS_RELWITHDEBINFO freetype)
+set(freetype_SYSTEM_LIBS_RELWITHDEBINFO )
+set(freetype_FRAMEWORK_DIRS_RELWITHDEBINFO )
+set(freetype_FRAMEWORKS_RELWITHDEBINFO )
+set(freetype_BUILD_DIRS_RELWITHDEBINFO )
+set(freetype_NO_SONAME_MODE_RELWITHDEBINFO FALSE)
+
+
+# COMPOUND VARIABLES
+set(freetype_COMPILE_OPTIONS_RELWITHDEBINFO
+    "$<$<COMPILE_LANGUAGE:CXX>:${freetype_COMPILE_OPTIONS_CXX_RELWITHDEBINFO}>"
+    "$<$<COMPILE_LANGUAGE:C>:${freetype_COMPILE_OPTIONS_C_RELWITHDEBINFO}>")
+set(freetype_LINKER_FLAGS_RELWITHDEBINFO
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${freetype_SHARED_LINK_FLAGS_RELWITHDEBINFO}>"
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${freetype_SHARED_LINK_FLAGS_RELWITHDEBINFO}>"
+    "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${freetype_EXE_LINK_FLAGS_RELWITHDEBINFO}>")
+
+
+set(freetype_COMPONENTS_RELWITHDEBINFO )

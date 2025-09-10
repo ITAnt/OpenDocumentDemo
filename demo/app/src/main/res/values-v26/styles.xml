@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BaseTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+
+        <!--<item name="colorPrimary">@color/green_what_second</item>
+        <item name="colorPrimaryDark">@color/green_what</item>
+        <item name="colorAccent">@color/orange_text</item>
+        <item name="android:windowBackground">@color/colorPrimary</item>-->
+        <item name="colorPrimary">#01875F</item>
+        <item name="colorPrimaryDark">#01563D</item>
+        <!--Checkbox选中颜色-->
+        <item name="colorAccent">#01875F</item>
+
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <!--解决全屏的时候底部content和导航栏之间有一根白线的现象-->
+        <item name="android:windowContentOverlay">@null</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <!--状态栏文字黑色-->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <!--<item name="android:windowLightNavigationBar" tools:ignore="NewApi">@android:color/white</item>-->
+
+        <!--Dialog message颜色-->
+        <item name="android:textColorPrimary">@color/black_text_comfortable</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle.textColor</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle.textColor</item>
+
+        <!--！！！高版本特性！！！-->
+        <!--解决自动填充密码后有黄色背景的问题-->
+        <item name="android:autofilledHighlight">@android:color/transparent</item>
+    </style>
+</resources>

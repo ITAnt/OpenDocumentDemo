@@ -1,0 +1,240 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    //id 'com.android.application'
+    id 'com.android.library'
+    // 移除不支持库项目的插件
+    // id 'com.google.gms.google-services'
+    // id 'com.google.firebase.crashlytics'
+    id 'app.opendocument.conanandroidgradleplugin'
+    id 'maven-publish'
+}
+
+android {
+    ndkVersion "28.1.13356709"
+}
+
+tasks.register('conanProfile', Copy) {
+    from "conanprofile.txt"
+    into project.layout.buildDirectory
+    filter(ReplaceTokens, tokens: ["NDK_PATH": android.ndkDirectory.toString()])
+}
+
+["armv8", "x86_64"].each { architecture ->
+    tasks.named("conanInstall-" + architecture) {
+        profile.set('build/conanprofile.txt')
+        deployer.set('conandeployer.py')
+        deployerFolder.set(outputDirectory.get().asFile.toString() + "/assets/core")
+        dependsOn(tasks.named('conanProfile'))
+        conanExecutable.set('D:\\github\\OpenDocument.droid-main\\conan-env\\Scripts\\conan.exe')
+    }
+}
+
+// 禁用不需要的架构任务
+tasks.named("conanInstall-armv7").configure {
+    enabled = false
+}
+
+tasks.named("conanInstall-x86").configure {
+    enabled = false
+}
+
+android {
+    defaultConfig {
+        // 移除applicationId，因为库不需要
+        minSdkVersion 23
+        compileSdkVersion 34
+        targetSdkVersion 34
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
+
+        vectorDrawables.useSupportLibrary true
+
+        externalNativeBuild {
+            cmake {
+                targets "odr-core"
+                arguments(
+                    "-DANDROID_STL=c++_shared",
+                    "-DCMAKE_TOOLCHAIN_FILE=build/conan/android_toolchain.cmake",
+                    "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                )
+                abiFilters 'arm64-v8a', 'x86_64'
+            }
+        }
+    }
+
+    flavorDimensions "default"
+
+    signingConfigs {
+        releasePro {
+            storeFile file("../../google_play.keystore")
+            storePassword "releaseme"
+            keyAlias "reader-pro"
+            keyPassword "releaseme"
+        }
+
+        releaseLite {
+            storeFile file("../../google_play.keystore")
+            storePassword "releaseme"
+            keyAlias "reader"
+            keyPassword "releaseme"
+        }
+    }
+
+    productFlavors {
+        lite {
+            signingConfig signingConfigs.releaseLite
+
+            resValue("bool", "DISABLE_TRACKING", "false")
+        }
+
+        pro {
+            // 移除applicationIdSuffix，因为库不需要
+            versionNameSuffix "-pro"
+
+            signingConfig signingConfigs.releasePro
+
+            resValue("bool", "DISABLE_TRACKING", "true")
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // 移除shrinkResources，因为这个选项只适用于应用程序
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
+            
+            // 移除Firebase Crashlytics相关配置
+            // firebaseCrashlytics.nativeSymbolUploadEnabled true
+            ndk.debugSymbolLevel = "full"
+        }
+    }
+
+    // 移除不兼容的bundle配置
+    // android.bundle.language.enableSplit false
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        cmake {
+            version "3.22.0+"
+            path "CMakeLists.txt"
+        }
+    }
+    lint {
+        abortOnError false
+    }
+    packagingOptions {
+        jniLibs {
+            // No need to pickFirst libc++_shared.so if all files are identical.
+            // They will be identical if NDK major version matches.
+            // NDK runtime problems may occur if NDK version mismatches,
+            // so comment this out, to get a compile error instead
+            // pickFirsts += ['**/libc++_shared.so']
+        }
+    }
+    namespace 'at.tomtasche.reader'
+    compileSdk 35
+    buildToolsVersion '34.0.0'
+
+    // 只使用armv8架构的assets，避免重复资源
+    sourceSets.main.assets.srcDirs += "build/conan/armv8/assets"
+}
+
+dependencies {
+    // 移除Firebase相关依赖
+    // api platform('com.google.firebase:firebase-bom:33.3.0')
+    // api 'com.google.firebase:firebase-storage'
+    // api 'com.google.firebase:firebase-auth'
+    // api 'com.google.firebase:firebase-crashlytics-ndk'
+    // api 'com.google.firebase:firebase-analytics'
+    // api 'com.google.firebase:firebase-config'
+
+
+
+    api 'androidx.appcompat:appcompat:1.7.0'
+    api 'androidx.core:core:1.13.1'
+    api 'com.google.android.material:material:1.12.0'
+    api 'androidx.webkit:webkit:1.11.0'
+
+    // 移除未使用的 AndroidMagic 依赖
+    // 移除 AssetExtractor 依赖，使用原生 Android API
+
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.6.1'
+    // espresso-idling-resource is used in main sourceSet as well. cannot be just androidTestImplementation
+    api 'androidx.test.espresso:espresso-idling-resource:3.6.1'
+    api 'androidx.annotation:annotation:1.8.2'
+}
+
+// Without removing .cxx dir on cleanup, double gradle clean is erroring out.
+// Before removing this workaround, check if "./gradlew assembleDebug; ./gradlew clean; ./gradlew clean" works
+tasks.named("clean") {
+    def dotCxxDir = layout.projectDirectory.dir(".cxx")
+    doFirst {
+        delete dotCxxDir
+    }
+}
+
+// 移除发布配置，简化AAR生成过程
+// afterEvaluate {
+//     publishing {
+//         publications {
+//             release(MavenPublication) {
+//                 from components.releaseVariant
+//                 groupId = 'at.tomtasche.reader'
+//                 artifactId = 'opendocument-reader'
+//                 version = '1.0.0'
+//             }
+//         }
+//     }
+// }
+
+// 验证ODR assets的任务
+tasks.register('verifyOdrAssets') {
+    description = 'Verify that ODR core assets are available for AAR build'
+    group = 'verification'
+    
+    doLast {
+        def assetsDir = new File(projectDir, "build/conan/armv8/assets/core")
+        if (!assetsDir.exists()) {
+            throw new GradleException("ODR core assets not found at ${assetsDir.absolutePath}. Please run conan build first.")
+        }
+        
+        def odrJsFile = new File(assetsDir, "odrcore/odr.js")
+        if (!odrJsFile.exists()) {
+            throw new GradleException("odr.js not found at ${odrJsFile.absolutePath}. This file is required for AAR functionality.")
+        }
+        
+        def odrSpreadsheetJsFile = new File(assetsDir, "odrcore/odr_spreadsheet.js")
+        if (!odrSpreadsheetJsFile.exists()) {
+            throw new GradleException("odr_spreadsheet.js not found. This file is required for AAR functionality.")
+        }
+        
+        println "✓ ODR assets verified (using armv8 assets only to avoid duplicates):"
+        println "  - odr.js (${odrJsFile.length()} bytes)"
+        println "  - odr_spreadsheet.js (${odrSpreadsheetJsFile.length()} bytes)"
+        println "  - Assets directory: ${assetsDir.absolutePath}"
+        println "  - Note: Using single architecture assets to prevent duplicate resource errors"
+    }
+}
+
+// 简化构建AAR的任务
+tasks.register('buildAAR', Copy) {
+    dependsOn('verifyOdrAssets', 'assembleRelease')
+    from layout.buildDirectory.dir("outputs/aar")
+    into rootProject.layout.projectDirectory.dir("output")
+    include "**/*.aar"
+    
+    doLast {
+        println "\nAAR文件已生成到: output 目录\n"
+    }
+}
